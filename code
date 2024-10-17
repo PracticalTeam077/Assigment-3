@@ -1,0 +1,200 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_BOOKS 100
+#define TITLE_LENGTH 50
+#define AUTHOR_LENGTH 50
+#define NAME_LENGTH 50
+#define CONTACT_LENGTH 15
+#define BORROW_COST 5.0  // Fixed cost to borrow each book
+
+typedef struct {
+    char title[TITLE_LENGTH];
+    char author[AUTHOR_LENGTH];
+    int year;
+} Book;
+
+typedef struct {
+    char name[NAME_LENGTH];
+    char contact[CONTACT_LENGTH];
+    Book borrowed_books[MAX_BOOKS];
+    int borrowed_count;
+} Borrower;
+
+Book library[MAX_BOOKS];
+int book_count = 0;
+Borrower borrowers[MAX_BOOKS];
+int borrower_count = 0;
+
+void add_book() {
+    if (book_count >= MAX_BOOKS) {
+        printf("Library is full! Cannot add more books.\n");
+        return;
+    }
+
+    Book new_book;
+    printf("Enter book title: ");
+    getchar();  // Consume newline from previous input
+    fgets(new_book.title, TITLE_LENGTH, stdin);
+    new_book.title[strcspn(new_book.title, "\n")] = '\0';  // Remove newline
+
+    printf("Enter book author: ");
+    fgets(new_book.author, AUTHOR_LENGTH, stdin);
+    new_book.author[strcspn(new_book.author, "\n")] = '\0';  // Remove newline
+
+    printf("Enter publication year: ");
+    scanf("%d", &new_book.year);
+
+    library[book_count++] = new_book;
+    printf("Book added: '%s' by %s (%d)\n", new_book.title, new_book.author, new_book.year);
+}
+
+void view_books() {
+    if (book_count == 0) {
+        printf("No books in the library.\n");
+        return;
+    }
+
+    printf("Books in the library:\n");
+    for (int i = 0; i < book_count; i++) {
+        printf("'%s' by %s (%d)\n", library[i].title, library[i].author, library[i].year);
+    }
+}
+
+void delete_book() {
+    char title[TITLE_LENGTH];
+    printf("Enter the title of the book to delete: ");
+    getchar();  // Consume newline from previous input
+    fgets(title, TITLE_LENGTH, stdin);
+    title[strcspn(title, "\n")] = '\0';  // Remove newline
+
+    for (int i = 0; i < book_count; i++) {
+        if (strcmp(library[i].title, title) == 0) {
+            for (int j = i; j < book_count - 1; j++) {
+                library[j] = library[j + 1];
+            }
+            book_count--;
+            printf("Book deleted: '%s'\n", title);
+            return;
+        }
+    }
+    printf("No book found with title: '%s'\n", title);
+}
+
+void search_book() {
+    char title[TITLE_LENGTH];
+    printf("Enter the title of the book to search: ");
+    getchar();  // Consume newline from previous input
+    fgets(title, TITLE_LENGTH, stdin);
+    title[strcspn(title, "\n")] = '\0';  // Remove newline
+
+    for (int i = 0; i < book_count; i++) {
+        if (strcmp(library[i].title, title) == 0) {
+            printf("Found: '%s' by %s (%d)\n", library[i].title, library[i].author, library[i].year);
+            return;
+        }
+    }
+    printf("No book found with title: '%s'\n", title);
+}
+
+void borrow_books() {
+    char borrower_name[NAME_LENGTH];
+    char borrower_contact[CONTACT_LENGTH];
+    int borrow_count;
+
+    printf("Enter your name: ");
+    getchar();  // Consume newline from previous input
+    fgets(borrower_name, NAME_LENGTH, stdin);
+    borrower_name[strcspn(borrower_name, "\n")] = '\0';  // Remove newline
+
+    printf("Enter your contact: ");
+    fgets(borrower_contact, CONTACT_LENGTH, stdin);
+    borrower_contact[strcspn(borrower_contact, "\n")] = '\0';  // Remove newline
+
+    // Check if the borrower already exists
+    int borrower_index = -1;
+    for (int i = 0; i < borrower_count; i++) {
+        if (strcmp(borrowers[i].name, borrower_name) == 0) {
+            borrower_index = i;
+            break;
+        }
+    }
+
+    // If the borrower doesn't exist, add them
+    if (borrower_index == -1 && borrower_count < MAX_BOOKS) {
+        strcpy(borrowers[borrower_count].name, borrower_name);
+        strcpy(borrowers[borrower_count].contact, borrower_contact);
+        borrowers[borrower_count].borrowed_count = 0;
+        borrower_index = borrower_count++;
+    }
+
+    printf("Enter the number of books to borrow (max %d): ", MAX_BOOKS);
+    scanf("%d", &borrow_count);
+
+    if (borrow_count <= 0 || borrow_count > book_count) {
+        printf("Invalid number of books to borrow.\n");
+        return;
+    }
+
+    // Record the borrowed books
+    for (int i = 0; i < borrow_count; i++) {
+        char book_title[TITLE_LENGTH];
+        printf("Enter the title of book %d: ", i + 1);
+        getchar();  // Consume newline from previous input
+        fgets(book_title, TITLE_LENGTH, stdin);
+        book_title[strcspn(book_title, "\n")] = '\0';  // Remove newline
+
+        for (int j = 0; j < book_count; j++) {
+            if (strcmp(library[j].title, book_title) == 0) {
+                borrowers[borrower_index].borrowed_books[borrowers[borrower_index].borrowed_count++] = library[j];
+                printf("Book borrowed: '%s' by %s\n", library[j].title, library[j].author);
+                break;
+            }
+        }
+    }
+
+    double total_cost = borrow_count * BORROW_COST;
+    printf("Total cost for borrowing %d book(s): $%.2f\n", borrow_count, total_cost);
+    printf("Thank you for borrowing from our library!\n");
+}
+
+int main() {
+    int choice;
+    while (1) {
+        printf("\nLibrary Management System\n");
+        printf("1. Add Book\n");
+        printf("2. View Books\n");
+        printf("3. Delete Book\n");
+        printf("4. Search Book\n");
+        printf("5. Borrow Books\n");
+        printf("6. Exit\n");
+        
+        printf("Choose an option: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                add_book();
+                break;
+            case 2:
+                view_books();
+                break;
+            case 3:
+                delete_book();
+                break;
+            case 4:
+                search_book();
+                break;
+            case 5:
+                borrow_books();
+                break;
+            case 6:
+                printf("Exiting the library management system.\n");
+                return 0;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+    return 0;
+}
