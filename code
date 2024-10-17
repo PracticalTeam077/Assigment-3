@@ -7,7 +7,7 @@
 #define AUTHOR_LENGTH 50
 #define NAME_LENGTH 50
 #define CONTACT_LENGTH 15
-#define BORROW_COST 5.0  // Fixed cost to borrow each book
+#define BORROW_COST 50.0  //cost to borrow each book
 
 typedef struct {
     char title[TITLE_LENGTH];
@@ -35,7 +35,7 @@ void add_book() {
 
     Book new_book;
     printf("Enter book title: ");
-    getchar();  // Consume newline from previous input
+    getchar();  //newline
     fgets(new_book.title, TITLE_LENGTH, stdin);
     new_book.title[strcspn(new_book.title, "\n")] = '\0';  // Remove newline
 
@@ -85,7 +85,7 @@ void delete_book() {
 void search_book() {
     char title[TITLE_LENGTH];
     printf("Enter the title of the book to search: ");
-    getchar();  // Consume newline from previous input
+    getchar();  // newline from previous input
     fgets(title, TITLE_LENGTH, stdin);
     title[strcspn(title, "\n")] = '\0';  // Remove newline
 
@@ -104,7 +104,7 @@ void borrow_books() {
     int borrow_count;
 
     printf("Enter your name: ");
-    getchar();  // Consume newline from previous input
+    getchar();  //newline from previous input
     fgets(borrower_name, NAME_LENGTH, stdin);
     borrower_name[strcspn(borrower_name, "\n")] = '\0';  // Remove newline
 
